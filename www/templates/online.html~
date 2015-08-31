@@ -1,0 +1,44 @@
+ <ion-view view-title="Users">
+
+ <ion-nav-bar class="bar-dark">
+         
+         </ion-nav-bar>
+           <ion-content>
+
+<div class="row">
+<div class="col">
+<button>
+Create Room
+
+</button>
+
+
+<!--Total Online Users:{{onlineUser}}-->
+
+</div>
+</div>
+
+<div class="list">
+
+  <div class="item item-button-right" ng-repeat = "x in rooms" >
+ <div ng-click="chat(x.id)"> {{x.name}}</div>
+    
+  </div>
+
+</div>
+
+
+    <!-- -->
+        </ion-content>
+        
+<style>
+
+.item
+{
+
+background:none !important;
+}
+</style>        
+        
+        
+      </ion-view>

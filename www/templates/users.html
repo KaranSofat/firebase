@@ -1,0 +1,36 @@
+ <ion-view view-title="Users">
+
+ <ion-nav-bar class="bar-dark">
+         
+         </ion-nav-bar>
+           <ion-content>
+
+<div class="list">
+
+  <div class="item item-button-right" ng-repeat = "x in users" >
+   {{x.email}}
+    <button class="button button-positive" ng-click="deleteUser(x.$id)">
+     Delete
+    </button>
+    <button class="button button-positive" ng-click="viewUser(x.$id)">
+     View
+    </button>
+  </div>
+
+</div>
+
+
+    <!-- -->
+        </ion-content>
+        
+<style>
+
+.item
+{
+
+background:none !important;
+}
+</style>        
+        
+        
+      </ion-view>

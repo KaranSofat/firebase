@@ -1,0 +1,397 @@
+angular.module('starter.controllers', [])
+
+.controller('login', function($scope,$state,$ionicPopup,$ionicLoading,$firebaseAuth,$rootScope) 
+{
+  $scope.user = {};
+ var ref = new Firebase('https://scorching-torch-6154.firebaseio.com');
+    var auth = $firebaseAuth(ref);
+ /*=============Auth Login Starts Here==============*/
+ $scope.signInAuth = function () {
+ 
+
+        if ($scope.user && $scope.user.email && $scope.user.password) {
+            $ionicLoading.show({
+                template: 'Signing In...'
+            });
+            auth.$authWithPassword({
+                email: $scope.user.email,
+                password: $scope.user.password
+            }).then(function (authData) {
+                $scope.currUser = {};
+                localStorage.setItem('logId',JSON.stringify(authData.expires));
+                ref.child("users").child(authData.uid).once('value', function (snapshot) {
+                   // var currUser = {};
+                 //   currUser = snapshot.val();
+                    
+              // var login = localStorage.setItem('logined',JSON.stringify(snapshot.val()));
+                //   console.log(login);
+                    // To Update AngularJS $scope either use $apply or $timeout
+                   // $scope.$apply(function () {
+                      //  $rootScope.displayName = val;
+                   // });
+                });
+                $ionicLoading.hide();
+                
+              // localStorage.setItem('logined',JSON.stringify(currUser));
+                
+              $state.go('online');
+             
+            }).catch(function (error) {
+                alert("Authentication failed:" + error.message);
+                $ionicLoading.hide();
+            });
+        } else
+            alert("Please enter email and password both");
+    }
+ 
+/*==================Auth Login ends Here=====================*/ 
+ 
+ /*==================Custom Login starts Here=====================*/ 
+ 
+  $scope.signIn = function()
+   {
+
+      var usersRef = new Firebase("https://scorching-torch-6154.firebaseio.com/users");
+          usersRef.orderByChild("email").equalTo($scope.user.email).once("value", function(snapshot) {
+            if(snapshot.exists()){
+              $scope.email = snapshot.val()[Object.keys(snapshot.val())[0]].email;
+              $scope.password = snapshot.val()[Object.keys(snapshot.val())[0]].password;
+              if($scope.user.email == ($scope.email) && $scope.user.password ==($scope.password))
+              {
+                   $state.go('dashboard');
+                
+              }
+              else
+              {
+              
+              var alertPopup = $ionicPopup.alert({
+                 title: 'Login Error',
+                 template: 'Please Check Your username and password'
+               });
+               alertPopup.then(function(res) {
+                 console.log('Login');
+               });
+              }
+  
+  }
+});
+
+/*============Custom Login Ends Here=============*/
+
+      /*var ref = new Firebase('https://scorching-torch-6154.firebaseio.com/users');
+      console.log($scope.user.email);
+      ref.orderByChild('email')
+        .startAt($scope.user.email)
+        //.orderBy('length')
+        //.startAt(10)
+        .on('value', function(snapshot)
+         { 
+            
+            console.log(snapshot.val());
+            
+           $scope.email = snapshot.val()[Object.keys(snapshot.val())[0]].email;
+           
+           alert($scope.email);
+            $scope.password = snapshot.val()[Object.keys(snapshot.val())[0]].password;
+     
+     
+          if($scope.user.email == ($scope.email))
+          {
+          
+             $state.go(dashboard);
+          
+          }
+          else
+          {
+                // $ionicLoading.hide();
+           var alertPopup = $ionicPopup.alert({
+           title: 'Login Error',
+           template: 'Please Check Your username and password'
+         });
+         alertPopup.then(function(res) {
+           console.log('Login');
+         });
+              
+          }
+     
+       });*/
+
+      
+    }
+  
+})
+
+.controller('dashboard', function($scope,$state,Fire,Users) 
+{
+
+$scope.users = Users.all();
+   
+    $scope.deleteUser = function(id)
+    {
+      var ref = new Firebase("https://scorching-torch-6154.firebaseio.com/users/"+id);
+      ref.remove();
+    }  
+  
+    $scope.viewUser = function(id)
+    {
+    
+        $state.go('viewUser',{id:id});
+     
+      
+   }  
+
+
+})
+.controller('startChat', function($scope,$state,Fire,Users,$firebase,Mess,$stateParams,Chats) 
+{
+
+ var id= $stateParams.id;
+ Chats.selectRoom(id);
+//var roomName = Chats.getSelectedRoomName();
+
+//alert(roomName);
+$scope.displayName = 'karan';
+    // Fetching Chat Records only if a Room is Selected
+  //  if (roomName) {
+    //    $scope.roomName = " - " + roomName;
+        $scope.chats = Chats.all();
+    //}
+
+    $scope.sendMessage = function (msg) {
+        console.log(msg);
+        Chats.send($scope.displayName, msg);
+       // $scope.IM.textMessage = "";
+    } 
+ 
+/*$scope.chats = Mess.all();
+console.log($scope.chats);
+
+$scope.user = {};
+var login = JSON.parse(localStorage.getItem('logined'));
+
+var name = login.firstname;
+$scope.sendMessage = function () {
+       var messages = $scope.user.message;
+        Mess.send(name, messages);*/
+        //$scope.IM.textMessage = "";
+  //  }
+
+
+/*var ref = new Firebase("https://vivid-heat-824.firebaseio.com/chat");
+         $scope.messages = $firebase(ref);
+        $scope.addMessage = function(e) {
+           $scope.sendMsg = function() {
+             
+                  $scope.messages.$add({from: $scope.name, body: $scope.msg});
+                  $scope.msg = "";
+           
+                }
+        }
+        $scope.clear = function(){
+          $scope.name = "";
+        }*/
+     
+
+})
+.controller('createRoom', function($scope,$state,Fire,Users,$stateParams,CreateRoom) 
+{
+
+$scope.user = {};
+var id = {id:6};
+var merge = angular.merge($scope.user,id)
+$scope.createRoom = function()
+{
+
+ 
+ CreateRoom.create(merge);
+
+//$state.go("createRoom");
+
+}
+})
+.controller('online', function($scope,$state,Fire,Users,$stateParams,Rooms) 
+{
+
+
+$scope.createRoom = function()
+{
+$state.go("createRoom");
+
+}
+
+ $scope.rooms = Rooms.all();
+console.log($scope.rooms);
+
+
+$scope.chat = function(id)
+{
+alert(id);
+
+$state.go('startChat',{id:id});
+
+}
+
+
+
+ /*var login = JSON.parse(localStorage.getItem('logined'));
+  var id = JSON.parse(localStorage.getItem('logId'));
+  
+  var userId = {id:id};
+  
+  var detail = angular.merge(login,userId);
+ 
+ var currentStatus = 'online';
+
+ var listRef = new Firebase("https://scorching-torch-6154.firebaseio.com/presence");
+var userRef = listRef.push();
+
+// Add ourselves to presence list when online.
+var presenceRef = new Firebase("https://scorching-torch-6154.firebaseio.com/.info/connected");
+presenceRef.on("value", function(snap) {
+  if (snap.val()) {
+    
+    userRef.set(detail);
+    // Remove ourselves when we disconnect.
+    userRef.onDisconnect().remove();
+  }
+});
+
+// Number of online users is the number of objects in the presence list.
+listRef.on("value", function(snap) {
+$scope.users = snap.val();
+
+$scope.onlineUser = snap.numChildren();
+
+
+
+
+  console.log("# of online users = " + snap.numChildren());
+});    
+
+*/
+
+
+
+
+})
+
+
+
+
+.controller('register', function($scope,$state,Fire,$ionicLoading,$firebaseAuth) 
+{
+
+// $scope.users = Users.all();
+   $scope.user = {};
+   var ref = new Firebase('https://scorching-torch-6154.firebaseio.com');
+    var auth = $firebaseAuth(ref);
+  /*==================Auth Register starts Here=====================*/ 
+  $scope.createUser = function (user) {
+  //alert(user)
+        //console.log($scope.user);
+        
+        if ($scope.user && $scope.user.email && $scope.user.password && $scope.user.firstname) {
+            $ionicLoading.show({
+                template: 'Signing Up...'
+            });
+
+            auth.$createUser({
+                email: $scope.user.email,
+                password: $scope.user.password
+            }).then(function (userData) {
+                alert("User created successfully!");
+                ref.child("users").child(userData.uid).set({
+                    email: $scope.user.email,
+                    firstname: $scope.user.firstname,
+                    lastname: $scope.user.lastname
+                });
+                $ionicLoading.hide();
+                //$scope.modal.hide();
+            }).catch(function (error) {
+                alert("Error: " + error);
+                $ionicLoading.hide();
+            });
+        } else
+            alert("Please fill all details");
+    }
+ 
+ 
+ 
+ /*==================Auth Register Ends Here=====================*/ 
+  
+  
+   $scope.register = function()
+   {
+     //console.log($scope.user);
+     Fire.Register($scope.user);
+       
+   }  
+   
+   
+})
+.controller('users', function($scope,$state,Users) 
+{
+ 
+   
+   
+})
+.controller('viewUser', function($scope,$state,Users,$stateParams,$firebase) 
+{
+
+
+  $scope.user={};
+   $scope.editForm=false;
+  var id= $stateParams.id;
+   var logs = [];
+   var ref = new Firebase("https://scorching-torch-6154.firebaseio.com/users/"+id);
+      ref.on("value", function(snapshot) {
+         var data = snapshot.val();
+       data.id = snapshot.name();
+    
+       $scope.id = data.id;
+    /*angular.forEach(snapshot.val(), function(value, key) {
+      this.push(value);
+    }, logs);*/
+
+         $scope.data =snapshot.val(); 
+         // console.log(snapshot.val().email);
+          $scope.user.firstname = snapshot.val().firstname;
+          $scope.user.lastname = snapshot.val().lastname;
+          $scope.user.email = snapshot.val().email;
+          $scope.user.password = snapshot.val().password;
+                
+          
+        }, function (errorObject) {
+          console.log("The read failed: " + errorObject.code);
+        });
+    
+      $scope.update = function()
+      {
+       $scope.editForm=true;
+       // $state.go('viewUser',{id:id});
+     
+      
+    }  
+      $scope.user ={};
+      $scope.updateInfo = function(id)
+      {
+        console.log($scope.user);
+       
+      
+      var updateData = new Firebase("https://scorching-torch-6154.firebaseio.com/users/"+id);
+     
+           
+      var onComplete = function(error) {
+      if (error) {
+        console.log('update  failed');
+      } else {
+        console.log('update success');
+      }
+    };
+    updateData.update($scope.user, onComplete);
+      
+    }  
+        
+});
+
+
